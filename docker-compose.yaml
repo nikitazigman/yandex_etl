@@ -12,10 +12,20 @@ services:
       interval: 30s
       timeout: 10s
       retries: 50
+    ports:
+      - 9200:9200
 
 
   redis:
     image: redis:latest
+    healthcheck:
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
+      interval: 30s
+      timeout: 10s
+      retries: 50
+    ports:
+      - 6379:6379
+
 
   etl:
     build: .
@@ -28,7 +38,6 @@ services:
       redis:
         condition: service_healthy
     network_mode: host
-
 
 
 volumes:

@@ -1,9 +1,9 @@
 from functools import partial
 
 import backoff
-from elasticsearch.exceptions import ConnectionError
-from psycopg2.errors import OperationalError
-from redis.exceptions import ConnectionError
+from elasticsearch.exceptions import ConnectionError as ElasticConnectionError
+from psycopg2.errors import OperationalError as PostgreConnectionError
+from redis.exceptions import ConnectionError as RedisConnectionError
 
 from etl.settings.settings import SystemSettings
 
@@ -19,5 +19,5 @@ backoff_expo = partial(
 etl_backoff = partial(
     backoff.on_exception,
     backoff_expo,
-    (ConnectionError, OperationalError, ConnectionError),
+    (ElasticConnectionError, PostgreConnectionError, RedisConnectionError),
 )

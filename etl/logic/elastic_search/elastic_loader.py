@@ -10,7 +10,7 @@ from loguru import logger
 from etl.logic.backoff.backoff import etl_backoff
 from etl.logic.storage.storage import Storage
 from etl.logic.transformer.dataclasses import ESBulkInt
-from etl.settings.settings import ES_SCHEMAS_PATH
+from etl.settings.settings import ES_SCHEMAS_PATH, ESSettings
 
 
 class ElasticSearchLoaderInt(ABC):
@@ -63,6 +63,11 @@ class ElasticSearchMoviesLoader(BasicElasticSearchLoader):
     index = "movies"
 
     input_topic = "movies_es_data"
+
+
+@etl_backoff()
+def get_es_client(es_settings: ESSettings) -> Elasticsearch:
+    return Elasticsearch(hosts=f"http://{es_settings.host}:{es_settings.port}")
 
 
 @lru_cache

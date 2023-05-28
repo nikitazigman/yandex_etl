@@ -15,14 +15,16 @@ WORKDIR /service
 RUN pip install --upgrade pip \
     && pip install poetry
 
+COPY ./README.md /service/README.md
 COPY ./poetry.lock /service/poetry.lock
 COPY ./pyproject.toml /service/pyproject.toml
+COPY ./etl /service/etl
+COPY ./configs /service/configs
 
 RUN poetry config installer.max-workers 10 \
     && poetry install 
 
-COPY ./configs /service/configs
-COPY ./etl /service/etl
+
 
 
 ENTRYPOINT ["poetry","run", "python", "etl/main.py"]

@@ -4,6 +4,7 @@ from elasticsearch import Elasticsearch
 from loguru import logger
 
 from etl.logic.elastic_search.elastic_loader import (
+    get_es_client,
     load_es_schemas,
     run_es_loaders,
 )
@@ -27,13 +28,12 @@ def main() -> None:
     es_settings = ESSettings()  # type: ignore
     redis_settings = RedisSettings()  # type: ignore
     system_settings = SystemSettings()
-
+    print(f"{es_settings=}")
     state = RedisState(settings=redis_settings)
     pg_client = PostgreClient(pg_settings)
-    es_client = Elasticsearch(
-        hosts=f"http://{es_settings.host}:{es_settings.port}"
-    )
+    es_client = get_es_client(es_settings)
     storage = Storage()
+
     load_es_schemas(es_client)
     while True:
         logger.info("Runnig the synchronization process")
