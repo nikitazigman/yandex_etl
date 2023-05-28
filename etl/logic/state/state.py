@@ -7,6 +7,7 @@ from loguru import logger
 from pydantic import BaseModel
 from redis import Redis
 
+from etl.logic.backoff.backoff import etl_backoff
 from etl.logic.storage.storage import Storage
 from etl.settings.settings import RedisSettings
 
@@ -49,6 +50,7 @@ class RedisState(StateInt):
         self.redis = Redis(host=settings.host, port=settings.port)
         self.redis_key = f"{settings.prefix}_{self.state_name}"
 
+    @etl_backoff()
     def publish_state(self) -> None:
         logger.info("Reading the state")
 
@@ -65,6 +67,7 @@ class RedisState(StateInt):
 
         self.state = StateData(last_checkup=datetime.utcnow())
 
+    @etl_backoff()
     def store_state(self) -> None:
         logger.info("Storing the state")
 

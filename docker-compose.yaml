@@ -21,9 +21,11 @@ services:
     build: .
     restart: always
     env_file:
-      - prod.env
+      - ./configs/prod.env
     depends_on:
       elastic_search:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     network_mode: host
 
