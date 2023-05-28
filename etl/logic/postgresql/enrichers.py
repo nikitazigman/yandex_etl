@@ -52,7 +52,7 @@ class BaseEnricher(EnricherInt):
             cursor.execute(query, vars=(flat_ids,))
             enriched_ids = [res["id"] for res in cursor.fetchall()]
 
-        self.storage.set(self.output_topic, enriched_ids)
+        self.storage.set_value(self.output_topic, enriched_ids)
 
 
 class PersonFilmEnricher(BaseEnricher):

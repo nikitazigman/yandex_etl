@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from functools import lru_cache
 from typing import cast
-from uuid import UUID
 
 from loguru import logger
 from psycopg2._psycopg import connection as pg_connection
@@ -50,7 +49,7 @@ class BaseProducer(ProducerInt):
             producer_ids = [res["id"] for res in response]
 
         if producer_ids:
-            self.storage.set(self.output_topic, producer_ids)
+            self.storage.set_value(self.output_topic, producer_ids)
 
 
 class PersonProducer(BaseProducer):

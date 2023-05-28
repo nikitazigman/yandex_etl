@@ -73,7 +73,7 @@ class BaseMerger(MergerInt):
                     f"Retrieved {len(film_data)} rows"
                     f" from `{self.table}` table"
                 )
-                self.storage.set(self.output_topic, film_data)
+                self.storage.set_value(self.output_topic, film_data)
                 yield None
 
 

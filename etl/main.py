@@ -1,6 +1,5 @@
 from time import sleep
 
-from elasticsearch import Elasticsearch
 from loguru import logger
 
 from etl.logic.elastic_search.elastic_loader import (
@@ -28,7 +27,7 @@ def main() -> None:
     es_settings = ESSettings()  # type: ignore
     redis_settings = RedisSettings()  # type: ignore
     system_settings = SystemSettings()
-    print(f"{es_settings=}")
+
     state = RedisState(settings=redis_settings)
     pg_client = PostgreClient(pg_settings)
     es_client = get_es_client(es_settings)

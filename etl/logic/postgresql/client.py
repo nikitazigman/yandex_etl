@@ -4,7 +4,7 @@ from typing import Type
 
 import psycopg2
 from loguru import logger
-from psycopg2._psycopg import connection as PGConnection
+from psycopg2._psycopg import connection as pg_connection
 from psycopg2.extras import DictCursor
 
 from etl.settings.settings import PGSettings
@@ -38,7 +38,7 @@ class PostgreClientInt(ABC):
 
 
 class PostgreClient(PostgreClientInt):
-    connection: PGConnection
+    connection: pg_connection
 
     def __init__(self, settings: PGSettings) -> None:
         self.settings = settings

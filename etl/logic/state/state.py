@@ -60,7 +60,7 @@ class RedisState(StateInt):
         else:
             self.state = StateData(last_checkup=cast(datetime, last_checkup))
 
-        self.storage.set(self.output_topic, self.state.last_checkup)
+        self.storage.set_value(self.output_topic, self.state.last_checkup)
 
     def update_state(self) -> None:
         logger.info("Updating the state")

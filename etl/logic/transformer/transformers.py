@@ -4,7 +4,7 @@ from typing import Type, cast
 
 from etl.logic.storage.storage import Storage
 
-from .dataclasses import ESBulk, MoviesContainer, SQLContainerInt
+from .dataclasses import MoviesContainer, SQLContainerInt
 
 
 class TransformerInt(ABC):
@@ -28,7 +28,7 @@ class BaseTrasformer(TransformerInt):
         if not sql_data:
             return
         es_data = self.dataclass(batch=sql_data.pop())
-        self.storage.set(self.output_topic, es_data.transform())
+        self.storage.set_value(self.output_topic, es_data.transform())
 
 
 class MoviesTransformer(BaseTrasformer):

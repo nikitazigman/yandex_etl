@@ -10,7 +10,7 @@ class Storage:
         return cls.storage[key]
 
     @classmethod
-    def set(cls, key: str, value: Any) -> None:
+    def set_value(cls, key: str, value: Any) -> None:
         cls.storage[key].append(value)
 
     @classmethod
