@@ -6,23 +6,19 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field, validator
 
-ESBulkType = TypeVar("ESBulkType")
+ESDocType = TypeVar("ESDocType", "ESGenreDoc", "ESMovieDoc")
+SQLRowType = TypeVar("SQLRowType", "GenreRow", "MovieRow")
 
 
-class SQLContainerInt(ABC, Generic[ESBulkType]):
+class BasicSQLRowDataInt(ABC):
     @abstractmethod
-    def __init__(self, batch: list) -> None:
-        ...
-
-    @abstractmethod
-    def transform(self) -> ESBulkType:
+    def transform_to_es_doc(self) -> BaseModel:
         ...
 
 
-class ESBulkInt(ABC):
-    @abstractmethod
-    def to_actions(self, index: str) -> list[dict]:
-        ...
+class ContainerMixin(BaseModel):
+    class Config:
+        arbitrary_types_allowed = True
 
 
 class Roles(Enum):
@@ -36,8 +32,8 @@ class ESPerson(BaseModel):
     name: str
 
 
-class ESMoviesDoc(BaseModel):
-    movies_id: str = Field(alias="id")
+class ESMovieDoc(BaseModel):
+    movie_id: str = Field(alias="id")
     imdb_rating: float | None
     genre: list[str]
     title: str
@@ -49,22 +45,24 @@ class ESMoviesDoc(BaseModel):
     writers: list[ESPerson]
 
 
-class ESIndexTemplate(BaseModel):
-    _index: str
-    _id: str
+class ESGenreDoc(BaseModel):
+    genre_id: str = Field(alias="id")
+    name: str
+    description: str | None
 
 
-class ESBulk(BaseModel, ESBulkInt):
-    bulk: list[ESMoviesDoc]
+class ESContainer(ContainerMixin, Generic[ESDocType]):
+    bulk: list[ESDocType]
 
     def to_actions(self, index: str) -> list[dict]:
         actions: list[dict] = []
         for doc in self.bulk:
+            doc_data = doc.dict(by_alias=True)
             actions.append(
                 {
-                    "_id": doc.movies_id,
+                    "_id": doc_data["id"],
                     "_index": index,
-                    **doc.dict(by_alias=True),
+                    **doc_data,
                 }
             )
 
@@ -77,7 +75,7 @@ class Person(BaseModel):
     person_role: Roles
 
 
-class Movie(BaseModel):
+class MovieRow(BaseModel, BasicSQLRowDataInt):
     film_id: UUID = Field(alias="id")
     title: str
     description: str | None
@@ -96,7 +94,7 @@ class Movie(BaseModel):
 
         return cast(list[str], value)
 
-    def transform_to_es_doc(self) -> ESMoviesDoc:
+    def transform_to_es_doc(self) -> ESMovieDoc:
         def get_persons_by(role: Roles) -> list[ESPerson]:
             return [
                 ESPerson(id=str(i.person_id), name=i.person_name)
@@ -112,7 +110,7 @@ class Movie(BaseModel):
         writers_names = [i.name for i in writers]
         directors_names = [i.name for i in directors]
 
-        es_index = ESMoviesDoc(
+        es_index = ESMovieDoc(
             id=str(self.film_id),
             imdb_rating=self.rating,
             genre=self.genres,
@@ -128,9 +126,18 @@ class Movie(BaseModel):
         return es_index
 
 
-class MoviesContainer(BaseModel, SQLContainerInt[ESBulk]):
-    batch: list[Movie]
+class GenreRow(BaseModel, BasicSQLRowDataInt):
+    genre_id: str = Field(alias="id")
+    name: str
+    description: str | None
 
-    def transform(self) -> ESBulk:
+    def transform_to_es_doc(self) -> BaseModel:
+        return ESGenreDoc(**self.dict(by_alias=True))
+
+
+class SQLContainer(ContainerMixin, Generic[SQLRowType, ESDocType]):
+    batch: list[SQLRowType]
+
+    def transform(self) -> ESContainer:
         es_indexes = [i.transform_to_es_doc() for i in self.batch]
-        return ESBulk(bulk=es_indexes)
+        return ESContainer[ESDocType](bulk=cast(list[ESDocType], es_indexes))

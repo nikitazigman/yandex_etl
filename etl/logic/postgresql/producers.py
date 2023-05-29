@@ -5,6 +5,7 @@ from typing import cast
 from loguru import logger
 from psycopg2._psycopg import connection as pg_connection
 
+from etl.logic.backoff.backoff import etl_backoff
 from etl.logic.storage.storage import Storage
 
 
@@ -34,6 +35,7 @@ class BaseProducer(ProducerInt):
         """
         return query
 
+    @etl_backoff()
     def produce(self, connection: pg_connection) -> None:
         logger.debug("Getting modified ids from the last checkup")
         last_checkup = self.storage.get(self.input_topic)[0]
