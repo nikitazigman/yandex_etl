@@ -4,11 +4,11 @@ from typing import Type, cast
 
 from etl.logic.storage.storage import Storage
 
-from .dataclasses import MoviesContainer, SQLContainerInt
+from .dataclasses import SQLContainer
 
 
 class TransformerInt(ABC):
-    dataclass: Type[SQLContainerInt]
+    dataclass: Type[SQLContainer]
 
     input_topic: str
     output_topic: str
@@ -21,6 +21,7 @@ class TransformerInt(ABC):
 
 
 class BaseTrasformer(TransformerInt):
+    dataclass = SQLContainer
     storage = Storage()
 
     def transform(self) -> None:
@@ -32,10 +33,13 @@ class BaseTrasformer(TransformerInt):
 
 
 class MoviesTransformer(BaseTrasformer):
-    dataclass = MoviesContainer
-
     input_topic = "movies_sql_data"
     output_topic = "movies_es_data"
+
+
+class GenreTransformer(BaseTrasformer):
+    input_topic = "genres_sql_data"
+    output_topic = "genres_es_data"
 
 
 @lru_cache

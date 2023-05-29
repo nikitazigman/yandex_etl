@@ -6,6 +6,7 @@ from typing import Iterator, cast
 from loguru import logger
 from psycopg2._psycopg import connection as pg_connection
 
+from etl.logic.backoff.backoff import etl_backoff
 from etl.logic.storage.storage import Storage
 
 
@@ -58,6 +59,7 @@ class BaseMerger(MergerInt):
         """
         return query
 
+    @etl_backoff()
     def merge(self, connection: pg_connection) -> Iterator[None]:
         query = self.get_query()
         films_ids = self.storage.get(self.input_topic)
@@ -65,9 +67,9 @@ class BaseMerger(MergerInt):
         if not films_ids:
             return []
 
-        unique_film_ids = tuple(set(chain(*films_ids)))
+        unique_ids = tuple(set(chain(*films_ids)))
         with connection.cursor() as cursor:
-            cursor.execute(query, vars=(unique_film_ids,))
+            cursor.execute(query, vars=(unique_ids,))
             while film_data := cursor.fetchmany(size=self.batch_size):
                 logger.debug(
                     f"Retrieved {len(film_data)} rows"
@@ -82,6 +84,24 @@ class MoviesMerger(BaseMerger):
     output_topic = "movies_sql_data"
 
     table = "content.film_work"
+
+
+class GenresMerger(BaseMerger):
+    input_topic = "genre_ids"
+    output_topic = "genres_sql_data"
+
+    table = "content.genre"
+
+    def get_query(self) -> str:
+        query = f"""
+        --sql
+        SELECT id, name, description
+        FROM {self.table}
+        WHERE id IN %s
+        ORDER BY modified
+        ;
+        """
+        return query
 
 
 @lru_cache

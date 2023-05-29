@@ -9,7 +9,7 @@ from loguru import logger
 
 from etl.logic.backoff.backoff import etl_backoff
 from etl.logic.storage.storage import Storage
-from etl.logic.transformer.dataclasses import ESBulkInt
+from etl.logic.transformer.dataclasses import ESContainer
 from etl.settings.settings import ES_SCHEMAS_PATH, ESSettings
 
 
@@ -33,6 +33,7 @@ class ElasticSearchLoaderInt(ABC):
 class BasicElasticSearchLoader(ElasticSearchLoaderInt):
     storage = Storage()
 
+    @etl_backoff()
     def load_schema(self, client: Elasticsearch) -> None:
         index_schema: dict[str, Any]
 
@@ -46,8 +47,9 @@ class BasicElasticSearchLoader(ElasticSearchLoaderInt):
             index=self.index, **index_schema
         )
 
+    @etl_backoff()
     def load_bulk(self, client: Elasticsearch) -> None:
-        es_data: list[ESBulkInt] = self.storage.get(self.input_topic)
+        es_data: list[ESContainer] = self.storage.get(self.input_topic)
 
         if not es_data:
             return
@@ -61,11 +63,15 @@ class BasicElasticSearchLoader(ElasticSearchLoaderInt):
 class ElasticSearchMoviesLoader(BasicElasticSearchLoader):
     schema = "es_movies_schema.json"
     index = "movies"
-
     input_topic = "movies_es_data"
 
 
-@etl_backoff()
+class ElasticSearchGenresLoader(BasicElasticSearchLoader):
+    schema = "es_genres_schema.json"
+    index = "genres"
+    input_topic = "genres_es_data"
+
+
 def get_es_client(es_settings: ESSettings) -> Elasticsearch:
     return Elasticsearch(hosts=f"http://{es_settings.host}:{es_settings.port}")
 
@@ -78,13 +84,11 @@ def get_es_loaders() -> list[ElasticSearchLoaderInt]:
     return cast(list[ElasticSearchLoaderInt], es_loaders)
 
 
-@etl_backoff()
 def load_es_schemas(client: Elasticsearch) -> None:
     for es_loader in get_es_loaders():
         es_loader.load_schema(client)
 
 
-@etl_backoff()
 def run_es_loaders(client: Elasticsearch) -> None:
     for es_loader in get_es_loaders():
         es_loader.load_bulk(client)
