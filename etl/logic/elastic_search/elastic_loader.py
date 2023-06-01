@@ -33,7 +33,6 @@ class ElasticSearchLoaderInt(ABC):
 class BasicElasticSearchLoader(ElasticSearchLoaderInt):
     storage = Storage()
 
-    @etl_backoff()
     def load_schema(self, client: Elasticsearch) -> None:
         index_schema: dict[str, Any]
 
@@ -47,7 +46,6 @@ class BasicElasticSearchLoader(ElasticSearchLoaderInt):
             index=self.index, **index_schema
         )
 
-    @etl_backoff()
     def load_bulk(self, client: Elasticsearch) -> None:
         es_data: list[ESContainer] = self.storage.get(self.input_topic)
 
@@ -84,11 +82,13 @@ def get_es_loaders() -> list[ElasticSearchLoaderInt]:
     return cast(list[ElasticSearchLoaderInt], es_loaders)
 
 
+@etl_backoff()
 def load_es_schemas(client: Elasticsearch) -> None:
     for es_loader in get_es_loaders():
         es_loader.load_schema(client)
 
 
+@etl_backoff()
 def run_es_loaders(client: Elasticsearch) -> None:
     for es_loader in get_es_loaders():
         es_loader.load_bulk(client)

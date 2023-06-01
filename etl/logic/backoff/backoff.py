@@ -16,8 +16,14 @@ backoff_expo = partial(
     max_value=system_settings.max_value,
 )
 
+
 etl_backoff = partial(
     backoff.on_exception,
     backoff_expo,
-    (ElasticConnectionError, PostgreConnectionError, RedisConnectionError),
+    (
+        ElasticConnectionError,
+        PostgreConnectionError,
+        RedisConnectionError,
+        ValueError,
+    ),
 )

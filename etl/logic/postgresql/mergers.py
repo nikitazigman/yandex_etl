@@ -6,7 +6,6 @@ from typing import Iterator, cast
 from loguru import logger
 from psycopg2._psycopg import connection as pg_connection
 
-from etl.logic.backoff.backoff import etl_backoff
 from etl.logic.storage.storage import Storage
 
 
@@ -59,7 +58,6 @@ class BaseMerger(MergerInt):
         """
         return query
 
-    @etl_backoff()
     def merge(self, connection: pg_connection) -> Iterator[None]:
         query = self.get_query()
         films_ids = self.storage.get(self.input_topic)

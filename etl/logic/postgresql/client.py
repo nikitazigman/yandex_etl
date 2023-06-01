@@ -7,6 +7,7 @@ from loguru import logger
 from psycopg2._psycopg import connection as pg_connection
 from psycopg2.extras import DictCursor
 
+from etl.logic.backoff.backoff import etl_backoff
 from etl.settings.settings import PGSettings
 
 
