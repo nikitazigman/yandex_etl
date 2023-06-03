@@ -29,7 +29,7 @@ class Roles(Enum):
 
 class ESPerson(BaseModel):
     person_id: str = Field(alias="id")
-    name: str
+    name: str = Field(alias="full_name")
 
 
 class ESMovieDoc(BaseModel):
@@ -137,7 +137,7 @@ class GenreRow(BaseModel, BasicSQLRowDataInt):
 
 class PersonRow(BaseModel, BasicSQLRowDataInt):
     person_id: str = Field(alias="id")
-    name: str
+    full_name: str
 
     def transform_to_es_doc(self) -> BaseModel:
         return ESPerson(**self.dict(by_alias=True))

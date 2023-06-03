@@ -111,7 +111,7 @@ class PersonsMerger(BaseMerger):
     def get_query(self) -> str:
         query = f"""
         --sql
-        SELECT id, full_name as name
+        SELECT id, full_name
         FROM {self.table}
         WHERE id IN %s
         ORDER BY modified
