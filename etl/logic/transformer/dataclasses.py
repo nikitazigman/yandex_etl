@@ -6,8 +6,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field, validator
 
-ESDocType = TypeVar("ESDocType", "ESGenreDoc", "ESMovieDoc")
-SQLRowType = TypeVar("SQLRowType", "GenreRow", "MovieRow")
+ESDocType = TypeVar("ESDocType", "ESGenreDoc", "ESMovieDoc", "ESPerson")
+SQLRowType = TypeVar("SQLRowType", "GenreRow", "MovieRow", "PersonRow")
 
 
 class BasicSQLRowDataInt(ABC):
@@ -133,6 +133,14 @@ class GenreRow(BaseModel, BasicSQLRowDataInt):
 
     def transform_to_es_doc(self) -> BaseModel:
         return ESGenreDoc(**self.dict(by_alias=True))
+
+
+class PersonRow(BaseModel, BasicSQLRowDataInt):
+    person_id: str = Field(alias="id")
+    name: str
+
+    def transform_to_es_doc(self) -> BaseModel:
+        return ESPerson(**self.dict(by_alias=True))
 
 
 class SQLContainer(ContainerMixin, Generic[SQLRowType, ESDocType]):

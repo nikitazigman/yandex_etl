@@ -70,6 +70,12 @@ class ElasticSearchGenresLoader(BasicElasticSearchLoader):
     input_topic = "genres_es_data"
 
 
+class ElasticSearchPersonsLoader(BasicElasticSearchLoader):
+    schema = "es_persons_schema.json"
+    index = "persons"
+    input_topic = "persons_es_data"
+
+
 def get_es_client(es_settings: ESSettings) -> Elasticsearch:
     return Elasticsearch(hosts=f"http://{es_settings.host}:{es_settings.port}")
 

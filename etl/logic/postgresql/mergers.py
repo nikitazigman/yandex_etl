@@ -102,6 +102,24 @@ class GenresMerger(BaseMerger):
         return query
 
 
+class PersonsMerger(BaseMerger):
+    input_topic = "person_ids"
+    output_topic = "persons_sql_data"
+
+    table = "content.person"
+
+    def get_query(self) -> str:
+        query = f"""
+        --sql
+        SELECT id, full_name as name
+        FROM {self.table}
+        WHERE id IN %s
+        ORDER BY modified
+        ;
+        """
+        return query
+
+
 @lru_cache
 def get_mergers() -> list[MergerInt]:
     mergers = [merger() for merger in BaseMerger.__subclasses__()]

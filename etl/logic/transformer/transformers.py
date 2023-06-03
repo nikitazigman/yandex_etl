@@ -42,6 +42,11 @@ class GenreTransformer(BaseTrasformer):
     output_topic = "genres_es_data"
 
 
+class PersonTransformer(BaseTrasformer):
+    input_topic = "persons_sql_data"
+    output_topic = "persons_es_data"
+
+
 @lru_cache
 def get_transformers() -> list[TransformerInt]:
     mergers = [merger() for merger in BaseTrasformer.__subclasses__()]
