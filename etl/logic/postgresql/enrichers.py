@@ -11,16 +11,15 @@ from etl.logic.storage.storage import Storage
 
 
 class EnricherInt(ABC):
-    storage: Storage
-    input_topic: str
-    output_topic: str
-
     @abstractmethod
     def enrich(self, connection: pg_connection) -> None:
         ...
 
 
 class BaseEnricher(EnricherInt):
+    input_topic: str
+    output_topic: str
+
     storage = Storage()
 
     id_field: str | None = None

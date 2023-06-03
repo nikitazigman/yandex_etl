@@ -10,8 +10,6 @@ services:
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
-    volumes:
-      - elastic_volume:/usr/share/elasticsearch/data
     healthcheck:
       test: curl -s http://127.0.0.1:9200 >/dev/null || exit 1
       interval: 30s
@@ -38,5 +36,4 @@ services:
 
 
 volumes:
-  elastic_volume:
   dbdata:
