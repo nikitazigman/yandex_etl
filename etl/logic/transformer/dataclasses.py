@@ -29,7 +29,7 @@ class Roles(Enum):
 
 class ESPerson(BaseModel):
     person_id: str = Field(alias="id")
-    name: str = Field(alias="full_name")
+    name: str
 
 
 class ESMovieDoc(BaseModel):
@@ -140,7 +140,7 @@ class PersonRow(BaseModel, BasicSQLRowDataInt):
     full_name: str
 
     def transform_to_es_doc(self) -> BaseModel:
-        return ESPerson(**self.dict(by_alias=True))
+        return ESPerson(id=self.person_id, name=self.full_name)
 
 
 class SQLContainer(ContainerMixin, Generic[SQLRowType, ESDocType]):
