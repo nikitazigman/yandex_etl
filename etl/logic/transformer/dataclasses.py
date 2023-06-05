@@ -32,17 +32,26 @@ class ESPerson(BaseModel):
     name: str
 
 
+class ESGenre(BaseModel):
+    genre_id: str = Field(alias="id")
+    name: str
+
+
 class ESMovieDoc(BaseModel):
     movie_id: str = Field(alias="id")
     imdb_rating: float | None
-    genre: list[str]
     title: str
     description: str | None
-    director: list[str]
+
     actors_names: list[str]
     writers_names: list[str]
+    directors_names: list[str]
+
+    directors: list[ESPerson]
     actors: list[ESPerson]
     writers: list[ESPerson]
+
+    genres: list[ESGenre]
 
 
 class ESGenreDoc(BaseModel):
@@ -75,6 +84,11 @@ class Person(BaseModel):
     person_role: Roles
 
 
+class Genre(BaseModel):
+    genre_id: UUID
+    genre_name: str
+
+
 class MovieRow(BaseModel, BasicSQLRowDataInt):
     film_id: UUID = Field(alias="id")
     title: str
@@ -83,16 +97,8 @@ class MovieRow(BaseModel, BasicSQLRowDataInt):
     film_type: str = Field(alias="type")
     created: datetime
     modified: datetime
-    genres: list
+    genres: list[Genre]
     persons: list[Person]
-
-    @validator("genres")
-    @classmethod
-    def convert_genres(cls, value: list) -> list[str]:
-        if not all(value):
-            return [""]
-
-        return cast(list[str], value)
 
     def transform_to_es_doc(self) -> ESMovieDoc:
         def get_persons_by(role: Roles) -> list[ESPerson]:
@@ -110,13 +116,19 @@ class MovieRow(BaseModel, BasicSQLRowDataInt):
         writers_names = [i.name for i in writers]
         directors_names = [i.name for i in directors]
 
+        genres = [
+            ESGenre(id=str(genre.genre_id), name=genre.genre_name)
+            for genre in self.genres
+        ]
+
         es_index = ESMovieDoc(
             id=str(self.film_id),
             imdb_rating=self.rating,
-            genre=self.genres,
+            genres=genres,
             title=self.title,
             description=self.description,
-            director=directors_names,
+            directors=directors,
+            directors_names=directors_names,
             actors_names=actors_names,
             writers_names=writers_names,
             actors=actors,

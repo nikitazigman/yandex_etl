@@ -9,17 +9,15 @@ from etl.logic.storage.storage import Storage
 
 
 class ProducerInt(ABC):
-    table: str
-    input_topic: str
-    output_topic: str
-    storage: Storage
-
     @abstractmethod
     def produce(self, connection: pg_connection) -> None:
         ...
 
 
 class BaseProducer(ProducerInt):
+    table: str
+    output_topic: str
+
     batch_size = 30
     storage = Storage()
     input_topic = "last_checkup"

@@ -10,6 +10,8 @@ services:
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
+      - http.cors.enabled=true
+      - http.cors.allow-origin=http://127.0.0.1:8080
     volumes:
       - elastic_volume:/usr/share/elasticsearch/data
     healthcheck:
@@ -38,5 +40,5 @@ services:
 
 
 volumes:
-  elastic_volume:
   dbdata:
+  elastic_volume:

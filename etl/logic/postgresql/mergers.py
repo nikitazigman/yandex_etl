@@ -10,17 +10,15 @@ from etl.logic.storage.storage import Storage
 
 
 class MergerInt(ABC):
-    storage: Storage
-    input_topic: str
-    output_topic: str
-    table: str
-
     @abstractmethod
     def merge(self, connection: pg_connection) -> Iterator[None]:
         ...
 
 
 class BaseMerger(MergerInt):
+    input_topic: str
+    output_topic: str
+    table: str
     storage = Storage()
     batch_size = 50
 
@@ -35,7 +33,15 @@ class BaseMerger(MergerInt):
             fw.type,
             fw.created,
             fw.modified,
-            ARRAY_AGG (DISTINCT g.name) as genres,
+            COALESCE (
+                JSON_AGG(
+                    DISTINCT jsonb_build_object(
+                        'genre_id', g.id,
+                        'genre_name', g.name
+                    )
+                ) FILTER (WHERE p.id is not null),
+                '[]'
+            ) as genres,
             COALESCE (
                 JSON_AGG(
                     DISTINCT jsonb_build_object(
