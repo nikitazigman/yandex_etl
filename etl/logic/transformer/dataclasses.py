@@ -29,7 +29,7 @@ class Roles(Enum):
 
 class ESPerson(BaseModel):
     person_id: str = Field(alias="id")
-    name: str
+    full_name: str
 
 
 class ESGenre(BaseModel):
@@ -103,7 +103,7 @@ class MovieRow(BaseModel, BasicSQLRowDataInt):
     def transform_to_es_doc(self) -> ESMovieDoc:
         def get_persons_by(role: Roles) -> list[ESPerson]:
             return [
-                ESPerson(id=str(i.person_id), name=i.person_name)
+                ESPerson(id=str(i.person_id), full_name=i.person_name)
                 for i in self.persons
                 if i.person_role == role
             ]
@@ -112,9 +112,9 @@ class MovieRow(BaseModel, BasicSQLRowDataInt):
         writers = get_persons_by(Roles.WRITTER)
         directors = get_persons_by(Roles.DIRECTOR)
 
-        actors_names = [i.name for i in actors]
-        writers_names = [i.name for i in writers]
-        directors_names = [i.name for i in directors]
+        actors_names = [i.full_name for i in actors]
+        writers_names = [i.full_name for i in writers]
+        directors_names = [i.full_name for i in directors]
 
         genres = [
             ESGenre(id=str(genre.genre_id), name=genre.genre_name)
@@ -152,7 +152,7 @@ class PersonRow(BaseModel, BasicSQLRowDataInt):
     full_name: str
 
     def transform_to_es_doc(self) -> BaseModel:
-        return ESPerson(id=self.person_id, name=self.full_name)
+        return ESPerson(id=self.person_id, full_name=self.full_name)
 
 
 class SQLContainer(ContainerMixin, Generic[SQLRowType, ESDocType]):
